@@ -58,15 +58,6 @@ class Player:
             self.direction = Direction(temp)
 
     def add_tile(self, x_pos, y_pos):
-        # if self.direction == Direction.LEFT:
-        #     x_pos -= TILE_SIZE
-        # elif self.direction == Direction.RIGHT:
-        #     x_pos += TILE_SIZE
-        # elif self.direction == Direction.UP:
-        #     y_pos += TILE_SIZE
-        # else:
-        #     y_pos -= TILE_SIZE
-
         self.snake.insert(-1, pyglet.shapes.Rectangle(x=x_pos, y=y_pos, width=TILE_SIZE, height=TILE_SIZE,
                                                       color=COLOUR_BLUE, batch=self.batch_ref))
 
@@ -96,3 +87,6 @@ class Player:
 
     def __get_tail(self):
         return self.snake[-1].x, self.snake[-1].y
+
+    def get_length(self):
+        return len(self.snake)

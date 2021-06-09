@@ -33,7 +33,7 @@ class Board:
 
         elif next_tile == Tiles.WALL or next_tile == Tiles.SNAKE:
             # game over
-            exit(0)
+            return "STOP"
         self.update_snake_tiles(snake_tail, (tile_x_px, tile_y_px))
         return next_tile
 
@@ -79,3 +79,19 @@ class Board:
         current_apple_y = self.__px_to_tiles(self.current_apple.y)
         self._board[current_apple_y][current_apple_x] = Tiles.EMPTY
         self.current_apple = None
+
+    def print_board(self):
+        for row in self._board[::-1]:
+            for elem in row:
+                print(elem.value, end=" ")
+            print()
+        print()
+
+    def get_board(self):
+        board_values = []
+        for row in self._board:
+            new_row = []
+            for elem in row:
+                new_row.append(elem.value)
+            board_values.append(new_row)
+        return board_values
