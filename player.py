@@ -51,6 +51,15 @@ class Player:
             self.direction = Direction(temp)
 
     def add_tile(self, x_pos, y_pos):
+        if self.direction == Direction.LEFT:
+            x_pos -= TILE_SIZE
+        elif self.direction == Direction.RIGHT:
+            x_pos += TILE_SIZE
+        elif self.direction == Direction.UP:
+            y_pos += TILE_SIZE
+        else:
+            y_pos -= TILE_SIZE
+
         self.snake.insert(0, pyglet.shapes.Rectangle(x=x_pos, y=y_pos, width=TILE_SIZE, height=TILE_SIZE,
                                                      color=COLOUR_BLUE, batch=self.batch_ref))
 
@@ -69,10 +78,10 @@ class Player:
 
         return x_pos, y_pos
 
-    def check_tile(self, tile):
-        if tile == Tiles.WALL or tile == Tiles.SNAKE:
-            exit(0)
-        elif tile == Tiles.EMPTY:
+    def eval_tile(self, tile):
+        if tile == Tiles.EMPTY:
             self.move()
-        else:
+        elif tile == Tiles.APPLE:
             self.add_tile(self.snake[0].x, self.snake[0].y)
+        else:
+            print("This should never happen")

@@ -22,8 +22,9 @@ def on_key_press(symbol, modifiers):
 
 def next_game_tick():
     (expected_tile_x, expected_tile_y) = snake.expected_tile_ahead()
-    tile_ahead = board.check_tile(expected_tile_x, expected_tile_y)
-    snake.check_tile(tile_ahead)
+    #print(expected_tile_x, expected_tile_y)
+    tile_ahead = board.parse_intention(expected_tile_x, expected_tile_y)
+    snake.eval_tile(tile_ahead)
 
 
 def main():
