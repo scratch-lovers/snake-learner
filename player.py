@@ -60,7 +60,7 @@ class Player:
         else:
             y_pos -= TILE_SIZE
 
-        self.snake.insert(0, pyglet.shapes.Rectangle(x=x_pos, y=y_pos, width=TILE_SIZE, height=TILE_SIZE,
+        self.snake.insert(-1, pyglet.shapes.Rectangle(x=x_pos, y=y_pos, width=TILE_SIZE, height=TILE_SIZE,
                                                      color=COLOUR_BLUE, batch=self.batch_ref))
 
     def expected_tile_ahead(self):
@@ -81,7 +81,8 @@ class Player:
     def eval_tile(self, tile):
         if tile == Tiles.EMPTY:
             self.move()
-        elif tile == Tiles.APPLE:
-            self.add_tile(self.snake[0].x, self.snake[0].y)
+        elif tile == Tiles.APPLE: #OGON CZASEM SIE JEBIE WIZUALNIE ALE JEST PLYNNIE EZ
+            self.move()
+            self.add_tile(self.snake[-1].x, self.snake[-1].y)
         else:
             print("This should never happen")
