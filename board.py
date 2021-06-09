@@ -77,4 +77,4 @@ class Board:
 
         self._board[apple_coords[1]][apple_coords[2]] = Tiles.APPLE
         return pyglet.shapes.Rectangle(x=int(apple_coords[2] * TILE_SIZE), y=int(apple_coords[1] * TILE_SIZE),
-                                   width=TILE_SIZE, height=TILE_SIZE, color=COLOUR_RED, batch=self.__batch_ref)
+                                       width=TILE_SIZE, height=TILE_SIZE, color=COLOUR_RED, batch=self.__batch_ref)
