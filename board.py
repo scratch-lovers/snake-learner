@@ -1,6 +1,6 @@
 import pyglet.shapes
 
-from config import BOARD_SIZE, TILE_SIZE, COLOUR_RED
+from config import BOARD_SIZE, TILE_SIZE, COLOUR_RED, START_X, START_Y
 from tiles import Tiles
 import random
 
@@ -11,7 +11,6 @@ class Board:
 
     # a board is a 2 dimensional square list of tiles on which the game takes place
     def __init__(self, batch):
-        self._snake_size = 1
         self.__batch_ref = batch
         self.__generate_board()
         self.current_apple = self.__generate_apple()
@@ -19,31 +18,23 @@ class Board:
     def __generate_board(self):
         self._board = [[Tiles.EMPTY for tile in range(BOARD_SIZE)] for row in range(BOARD_SIZE)]
 
-    def parse_intention(self, tile_x_px, tile_y_px):
+    def parse_intention(self, tile_x_px, tile_y_px, snake_tail):
         if not any(Tiles.APPLE in x for x in self._board):
+            # generate a new apple
             self.current_apple = self.__generate_apple()
-            new_apple_x = self.__convert_px_to_tiles(self.current_apple.x)
-            new_apple_y = self.__convert_px_to_tiles(self.current_apple.y)
-            self._board[new_apple_y][new_apple_x] = Tiles.APPLE
 
-        tile_x = self.__convert_px_to_tiles(tile_x_px)
-        tile_y = self.__convert_px_to_tiles(tile_y_px)
-
+        tile_x = self.__px_to_tiles(tile_x_px)
+        tile_y = self.__px_to_tiles(tile_y_px)
         next_tile = self.__check_tile(tile_x, tile_y)
 
         if next_tile == Tiles.APPLE:
-            current_apple_x = self.__convert_px_to_tiles(self.current_apple.x)
-            current_apple_y = self.__convert_px_to_tiles(self.current_apple.y)
-            self._board[current_apple_y][current_apple_x] = Tiles.EMPTY
-            self.current_apple = None
+            self.update_snake_tiles(snake_tail, (tile_x_px, tile_y_px), True)
+            self.__remove_apple()
 
-            # self.current_apple = self.__generate_apple()
-            # new_apple_x = self.__convert_px_to_tiles(self.current_apple.x)
-            # new_apple_y = self.__convert_px_to_tiles(self.current_apple.y)
-            # self._board[new_apple_y][new_apple_x] = Tiles.APPLE
         elif next_tile == Tiles.WALL or next_tile == Tiles.SNAKE:
+            # game over
             exit(0)
-
+        self.update_snake_tiles(snake_tail, (tile_x_px, tile_y_px))
         return next_tile
 
     def __check_tile(self, tile_x, tile_y):
@@ -53,14 +44,18 @@ class Board:
             return Tiles.WALL
 
     @staticmethod
-    def __convert_px_to_tiles(tile_in_px):
+    def __px_to_tiles(tile_in_px):
         return int(tile_in_px / TILE_SIZE)
 
-    def add_snake_tile(self, tile_x_px, tile_y_px):
-        tile_y = self.__convert_px_to_tiles(tile_y_px)
-        tile_x = self.__convert_px_to_tiles(tile_x_px)
-        self._board[tile_y][tile_x] = Tiles.SNAKE
-        self._snake_size += 1
+    def update_snake_tiles(self, tail, new_snake_head, ate_apple=False):
+        if not ate_apple:
+            # remove tail
+            (tail_x, tail_y) = (self.__px_to_tiles(tail[0]), self.__px_to_tiles(tail[1]))
+            self._board[tail_y][tail_x] = Tiles.EMPTY
+        # move the head
+        (new_head_x, new_head_y) = (self.__px_to_tiles(new_snake_head[0]), self.__px_to_tiles(new_snake_head[1]))
+        self._board[new_head_y][new_head_x] = Tiles.SNAKE
+
 
     def __generate_apple(self):
         # TODO check if 'snake percentage' is high enough
@@ -78,3 +73,9 @@ class Board:
         self._board[apple_coords[1]][apple_coords[2]] = Tiles.APPLE
         return pyglet.shapes.Rectangle(x=int(apple_coords[2] * TILE_SIZE), y=int(apple_coords[1] * TILE_SIZE),
                                        width=TILE_SIZE, height=TILE_SIZE, color=COLOUR_RED, batch=self.__batch_ref)
+
+    def __remove_apple(self):
+        current_apple_x = self.__px_to_tiles(self.current_apple.x)
+        current_apple_y = self.__px_to_tiles(self.current_apple.y)
+        self._board[current_apple_y][current_apple_x] = Tiles.EMPTY
+        self.current_apple = None

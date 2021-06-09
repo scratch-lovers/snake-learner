@@ -22,7 +22,6 @@ class Player:
     @eventHandler.event
     def on_turn(self, key):
         self.change_direction(key)
-        print("Does it work?")
 
     def move(self):
         head_x, head_y = self.snake[0].x, self.snake[0].y
@@ -63,7 +62,7 @@ class Player:
         self.snake.insert(-1, pyglet.shapes.Rectangle(x=x_pos, y=y_pos, width=TILE_SIZE, height=TILE_SIZE,
                                                       color=COLOUR_BLUE, batch=self.batch_ref))
 
-    def expected_tile_ahead(self):
+    def get_snake_info(self):
         x_pos = self.snake[0].x
         y_pos = self.snake[0].y
 
@@ -76,7 +75,7 @@ class Player:
         else:
             y_pos -= TILE_SIZE
 
-        return x_pos, y_pos
+        return x_pos, y_pos, self.__get_tail()
 
     def eval_tile(self, tile):
         if tile == Tiles.EMPTY:
@@ -86,3 +85,6 @@ class Player:
             self.add_tile(self.snake[-1].x, self.snake[-1].y)
         else:
             print("This should never happen")
+
+    def __get_tail(self):
+        return self.snake[-1].x, self.snake[-1].y

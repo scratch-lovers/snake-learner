@@ -25,10 +25,10 @@ def on_key_press(symbol, modifiers):
 
 
 def next_game_tick():
-    (expected_tile_x, expected_tile_y) = snake.expected_tile_ahead()
-    # print(expected_tile_x, expected_tile_y)
-    tile_ahead = board.parse_intention(expected_tile_x, expected_tile_y)
+    (expected_tile_x, expected_tile_y, snake_tail) = snake.get_snake_info()
+    tile_ahead = board.parse_intention(expected_tile_x, expected_tile_y, snake_tail)
     snake.eval_tile(tile_ahead)
+
     global move_available
     move_available = True
 

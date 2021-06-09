@@ -14,4 +14,4 @@ COLOUR_BLUE = (55, 55, 255)
 COLOUR_RED = (214, 9, 9)
 
 # game loop config
-TICK_LENGTH = 0.2
+TICK_LENGTH = 0.1
