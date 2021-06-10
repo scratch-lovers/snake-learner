@@ -19,7 +19,9 @@ def next_game_tick():
 
     global move_available
     move_available = True
-    return board.get_board(), snake.get_length()
+    board_with_head = add_head_to_board(board.get_board(), (snake.snake[0].x, snake.snake[0].y))
+    # return board_with_head, snake.get_length(), tile_ahead
+    return board_with_head, board.distance_from_apple(), tile_ahead
 
 
 def input_loop():
@@ -39,7 +41,7 @@ def input_loop():
 def next_tick(action):
     snake.change_direction(action)
     res = next_game_tick()
-    board.print_board()
+    # board.print_board()
     return res
 
 
@@ -68,3 +70,9 @@ def main(mode):
 
 if __name__ == '__main__':
     main(0)
+
+def add_head_to_board(boarde, head_coords):
+    head_y = board.px_to_tiles(head_coords[1])
+    head_x = board.px_to_tiles(head_coords[0])
+    boarde[head_y][head_x] = 4
+    return boarde

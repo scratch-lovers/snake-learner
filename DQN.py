@@ -109,8 +109,8 @@ agent.initialize()
 random_policy = random_tf_policy.RandomTFPolicy(train_env.time_step_spec(),
                                                 train_env.action_spec())
 
-print("\nPOLICJA ", random_policy.policy_state_spec, random_policy.policy_step_spec)
-print("\nPOLICJA ", agent.policy.action_spec, agent.policy.time_step_spec)
+# print("\nPOLICJA ", random_policy.policy_state_spec, random_policy.policy_step_spec)
+# print("\nPOLICJA ", agent.policy.action_spec, agent.policy.time_step_spec)
 
 eval_policy = agent.policy
 collect_policy = agent.collect_policy
@@ -119,15 +119,14 @@ collect_policy = agent.collect_policy
 def compute_avg_return(environment, policy, num_episodes=10):
     total_return = 0.0
     for _ in range(num_episodes):
-
         time_step = environment.reset()
         episode_return = 0.0
 
-        print("\nTESTJD ", policy.info_spec)
+        # print("\nTESTJD ", policy.info_spec)
 
         while not time_step.is_last():
             action_step = policy.action(time_step)
-            print("\nHERERERERREE", action_step.action)
+            # print("\nHERERERERREE", action_step.action)
             time_step = environment.step(action_step.action)
             episode_return += time_step.reward
         total_return += episode_return
@@ -157,10 +156,14 @@ def collect_data(env, policy, buffer, steps):
         collect_step(env, policy, buffer)
 
 
+collect_data(train_env, random_policy, replay_buffer, initial_collect_steps)
+
 dataset = replay_buffer.as_dataset(
     num_parallel_calls=3,
     sample_batch_size=batch_size,
     num_steps=2).prefetch(3)
+
+print(dataset)
 
 iterator = iter(dataset)
 
