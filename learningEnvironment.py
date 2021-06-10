@@ -78,4 +78,4 @@ class LearningEnvironment(py_environment.PyEnvironment):
 
 if __name__ == "__main__":
     env = LearningEnvironment()
-    utils.validate_py_environment(env, episodes=5)
+    utils.validate_py_environment(env, episodes=1)

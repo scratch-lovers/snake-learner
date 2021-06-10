@@ -39,10 +39,8 @@ def input_loop():
 def next_tick(action):
     snake.change_direction(action)
     res = next_game_tick()
-    if res is None:
-        return None
-    else:
-        return res
+    board.print_board()
+    return res
 
 
 def main(mode):

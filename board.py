@@ -83,7 +83,7 @@ class Board:
     def print_board(self):
         for row in self._board[::-1]:
             for elem in row:
-                print(elem.value, end=" ")
+                print('_', end=" ") if elem.value == 0 else print(elem.value, end=" ")
             print()
         print()
 
