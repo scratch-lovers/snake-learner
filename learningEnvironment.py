@@ -6,7 +6,7 @@ from tf_agents.environments import utils
 import main
 import pyglet
 from config import BOARD_SIZE
-from tiles import Tiles
+from tile import Tile
 
 
 class LearningEnvironment(py_environment.PyEnvironment):
@@ -58,9 +58,9 @@ class LearningEnvironment(py_environment.PyEnvironment):
             reward = self._snake_length
             return time_step.termination(self._board, reward)
         else:
-            if res[2] != Tiles.EMPTY:
+            if res[2] != Tile.EMPTY:
                 print(res[2])
-            if res[2] == Tiles.APPLE:
+            if res[2] == Tile.APPLE:
                 return time_step.transition(self._board, reward=500000000.0, discount=1.0)
             return time_step.transition(self._board, reward=(27 - res[1]) ** 2, discount=1.0)
 

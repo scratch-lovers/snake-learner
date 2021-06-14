@@ -68,11 +68,12 @@ def main(mode):
         input_loop()
 
 
-if __name__ == '__main__':
-    main(0)
-
 def add_head_to_board(boarde, head_coords):
     head_y = board.px_to_tiles(head_coords[1])
     head_x = board.px_to_tiles(head_coords[0])
     boarde[head_y][head_x] = 4
     return boarde
+
+
+if __name__ == '__main__':
+    main(0)

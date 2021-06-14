@@ -1,7 +1,7 @@
-import enum
+from enum import Enum
 
 
-class Tiles(enum.Enum):
+class Tile(Enum):
     EMPTY = 0
     SNAKE = 1
     APPLE = 2

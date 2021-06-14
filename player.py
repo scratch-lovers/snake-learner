@@ -1,15 +1,9 @@
 import pyglet
 import playerEvents
 from config import START_X, START_Y, TILE_SIZE, COLOUR_BLUE
-from tiles import Tiles
+from tile import Tile
 import enum
-
-
-class Direction(enum.Enum):
-    UP = 1
-    LEFT = 2
-    DOWN = 3
-    RIGHT = 4
+from direction import Direction
 
 
 # upper-left center
@@ -77,9 +71,9 @@ class Player:
         return x_pos, y_pos, self.__get_tail()
 
     def eval_tile(self, tile):
-        if tile == Tiles.EMPTY:
+        if tile == Tile.EMPTY:
             self.move()
-        elif tile == Tiles.APPLE:
+        elif tile == Tile.APPLE:
             self.move()
             self.add_tile(self.snake[-1].x, self.snake[-1].y)
         else:
