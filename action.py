@@ -1,4 +1,3 @@
-from typing import Tuple
 from dataclasses import dataclass
 
 
@@ -15,6 +14,6 @@ class ActionMove:
 
 @dataclass(frozen=True)
 class ActionAddMove:
-    added_to: int
+    added_to: tuple[int, int]
     move_from: tuple[int, int]
     move_to: tuple[int, int]
