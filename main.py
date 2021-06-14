@@ -5,6 +5,8 @@ from config import TICK_LENGTH
 from move import Move
 from board import Board
 from screen import Screen
+from playerState import PlayerState
+
 
 
 class GameMode(Enum):
@@ -14,21 +16,22 @@ class GameMode(Enum):
 
 def main(game_mode: GameMode):
     board = Board()
+    player_state = PlayerState()
     setup_actions = board.setup_board()
     if game_mode == GameMode.PLAYER:
-        screen = Screen()
+        screen = Screen(player_state.get_event_handler())
         for action in setup_actions:
             screen.draw_action(action)
 
-        schedule_interval(lambda _: _player_loop(board, screen), TICK_LENGTH)
+        schedule_interval(lambda _: _player_loop(board, screen, player_state), TICK_LENGTH)
         run()
     else:
         _tensorflow_loop()
 
 
-def _player_loop(board, screen):
-    action = board.parse_move(screen.get_player_move())
-    screen.set_player_move(Move.FORWARD)
+def _player_loop(board, screen, player_state):
+    action = board.parse_move(player_state.get_player_move())
+    player_state.set_player_move(Move.FORWARD)
     screen.draw_action(action)
     screen.unlock_move()
 

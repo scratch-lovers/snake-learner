@@ -12,20 +12,20 @@ class Screen:
     __entities: list[pyglet.shapes.Rectangle]
     __next_player_move: Move
 
-    def __init__(self):
+    def __init__(self, event_handler):
         self.__window = pyglet.window.Window(WINDOW_SIZE, WINDOW_SIZE)
         self.__batch = pyglet.graphics.Batch()
         self.__entities = []
         self.__move_available = True
-        self.__next_player_move = Move.FORWARD
+        self.__event_handler = event_handler
 
         @self.__window.event
         def on_key_press(symbol: pyglet.window.key, _):
             if self.__move_available:
                 if symbol == pyglet.window.key.A or symbol == pyglet.window.key.LEFT:
-                    self.__next_player_move = Move.TURN_LEFT
+                    self.__event_handler.next_player_move(Move.TURN_LEFT)
                 elif symbol == pyglet.window.key.D or symbol == pyglet.window.key.RIGHT:
-                    self.__next_player_move = Move.TURN_RIGHT
+                    self.__event_handler.next_player_move(Move.TURN_RIGHT)
                 self.__move_available = False
 
         @self.__window.event
@@ -68,12 +68,6 @@ class Screen:
 
         curr_entity.y = new_y
         curr_entity.x = new_x
-
-    def get_player_move(self):
-        return self.__next_player_move
-    
-    def set_player_move(self, player_move):
-        self.__next_player_move = player_move
 
     @staticmethod
     def __tile_to_px(tile: tuple[int, int]):
