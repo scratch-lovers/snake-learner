@@ -37,7 +37,6 @@ class Board:
         if next_tile == Tile.APPLE:
             self.__update_snake(next_head_y, next_head_x, True)
             old_apple_y, old_apple_x = self.__current_apple
-            # self.__board[old_apple_y][old_apple_x] = Tile.EMPTY // FIXME
             self.__current_apple = self.__generate_apple()
             return ActionAddMove(self.__snake[0], Tile.SNAKE, (old_apple_y, old_apple_x), self.__current_apple)
         elif next_tile == Tile.EMPTY:
