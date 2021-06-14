@@ -1,107 +1,110 @@
-import math
-
-import pyglet.shapes
-
-from config import BOARD_SIZE, TILE_SIZE, COLOUR_RED, START_X, START_Y
-from tiles import Tiles
 import random
-
+from config import BOARD_SIZE, START_Y, START_X
+from tile import Tile
+from move import Move
+from direction import Direction
+from action import ActionQuit, ActionMove, ActionAddMove, ActionAdd
+# FIXME apple spawn edge case syf
 
 class Board:
 
-    _board = []
+    __board: list[list[Tile]] = []
+    __snake: list[tuple[int, int]]
+    __snake_direction: Direction
+    __current_apple: tuple[int, int]
 
-    # a board is a 2 dimensional square list of tiles on which the game takes place
-    def __init__(self, batch):
-        self.__batch_ref = batch
+    def __init__(self):
+        self.__snake = []
+        self.__snake_direction = Direction.LEFT
+
+    def setup_board(self):
         self.__generate_board()
-        self.current_apple = self.__generate_apple()
-        self.__head = None
+        self.__update_snake(START_Y, START_X, True)
+        self.__current_apple = self.__generate_apple()
+        apple_y, apple_x = self.__current_apple
+        return [ActionAdd((START_Y, START_X), Tile.SNAKE), ActionAdd((apple_y, apple_x), Tile.APPLE)]
 
     def __generate_board(self):
-        self._board = [[Tiles.EMPTY for tile in range(BOARD_SIZE)] for row in range(BOARD_SIZE)]
+        self.__board = [
+            [Tile.EMPTY for tile in range(BOARD_SIZE)]
+            for row in range(BOARD_SIZE)]
 
-    def parse_intention(self, tile_x_px, tile_y_px, snake_tail):
-        # if not any(Tiles.APPLE in x for x in self._board):
-        #     # generate a new apple
-        #     # TO JEST SCAM
-        #     self.current_apple = self.__generate_apple()
+    def parse_move(self, move: Move):
+        self.__change_direction(move)
+        next_head_y, next_head_x = self.__calculate_next_tile()
+        next_tile: Tile = self.__check_tile(next_head_y, next_head_x)
 
-        tile_x = self.px_to_tiles(tile_x_px)
-        tile_y = self.px_to_tiles(tile_y_px)
-        next_tile = self.__check_tile(tile_x, tile_y)
-
-        if next_tile == Tiles.APPLE:
-            self.update_snake_tiles(snake_tail, (tile_x_px, tile_y_px), True)
-            self.__remove_apple()
-            self.current_apple = self.__generate_apple()
-
-        elif next_tile == Tiles.WALL or next_tile == Tiles.SNAKE:
-            # game over
-            return "STOP"
-        self.update_snake_tiles(snake_tail, (tile_x_px, tile_y_px))
-        return next_tile
-
-    def __check_tile(self, tile_x, tile_y):
-        if tile_x in range(BOARD_SIZE) and tile_y in range(BOARD_SIZE):
-            return self._board[tile_y][tile_x]
+        if next_tile == Tile.APPLE:
+            self.__update_snake(next_head_y, next_head_x, True)
+            old_apple_y, old_apple_x = self.__current_apple
+            self.__current_apple = self.__generate_apple()
+            return ActionAddMove(self.__snake[0], Tile.SNAKE, (old_apple_y, old_apple_x), self.__current_apple)
+        elif next_tile == Tile.EMPTY:
+            old_tail = self.__snake[-1]
+            self.__update_snake(next_head_y, next_head_x, False)
+            return ActionMove(old_tail, self.__snake[0])
         else:
-            return Tiles.WALL
+            # WALL or SNAKE
+            return ActionQuit()
 
-    @staticmethod
-    def px_to_tiles(tile_in_px):
-        return int(tile_in_px / TILE_SIZE)
+    def __change_direction(self, move: Move):
+        if move == Move.FORWARD:
+            pass
+        else:
+            if move == Move.TURN_LEFT:
+                next_move_value: int = (self.__snake_direction.value + 1) % 4
+            else:
+                next_move_value: int = (self.__snake_direction.value - 1) % 4
+            self.__snake_direction = Direction(next_move_value)
 
-    def update_snake_tiles(self, tail, new_snake_head, ate_apple=False):
+    def __calculate_next_tile(self):
+        head_y, head_x = self.__snake[0]
+
+        if self.__snake_direction == Direction.UP:
+            head_y -= 1
+        elif self.__snake_direction == Direction.LEFT:
+            head_x += 1
+        elif self.__snake_direction == Direction.DOWN:
+            head_y += 1
+        else:
+            head_x -= 1
+
+        return head_y, head_x
+
+    def __check_tile(self, tile_y: int, tile_x: int) -> Tile:
+        if tile_y in range(BOARD_SIZE) and tile_x in range(BOARD_SIZE):
+            return self.__board[tile_y][tile_x]
+        else:
+            return Tile.WALL
+
+    def __update_snake(self, next_head_y, next_head_x, ate_apple: bool):
+        self.__board[next_head_y][next_head_x] = Tile.SNAKE
+        self.__snake.insert(0, (next_head_y, next_head_x))
+
         if not ate_apple:
-            # remove tail
-            (tail_x, tail_y) = (self.px_to_tiles(tail[0]), self.px_to_tiles(tail[1]))
-            self._board[tail_y][tail_x] = Tiles.EMPTY
-        # move the head
-        (new_head_x, new_head_y) = (self.px_to_tiles(new_snake_head[0]), self.px_to_tiles(new_snake_head[1]))
-        self._board[new_head_y][new_head_x] = Tiles.SNAKE
-        self.__head = (new_head_x, new_head_y)
+            tail_y, tail_x = self.__snake[-1]
+            self.__board[tail_y][tail_x] = Tile.EMPTY
+            self.__snake.pop()
 
-
-    def __generate_apple(self):
+    def __generate_apple(self) -> tuple[int, int]:
         # TODO check if 'snake percentage' is high enough
 
         # map the board: TILE -> (TILE, y, x)
-        board_indexed = [[(self._board[row][tile], row, tile) for tile in range(BOARD_SIZE)]
+        board_indexed = [[(self.__board[row][tile], row, tile) for tile in range(BOARD_SIZE)]
                          for row in range(BOARD_SIZE)]
         board_indexed_flattened = [item for sublist in board_indexed for item in sublist]
 
-        apple_candidates = list(filter(lambda tile: tile[0] == Tiles.EMPTY, board_indexed_flattened))
+        apple_candidates = list(filter(lambda tile: tile[0] == Tile.EMPTY, board_indexed_flattened))
 
-        apple_index = random.randint(0, len(apple_candidates))
-        apple_coords = apple_candidates[apple_index]
+        apple_index: int = random.randint(0, len(apple_candidates) - 1)
+        apple_coords: tuple[int, int] = apple_candidates[apple_index][1:]
 
-        self._board[apple_coords[1]][apple_coords[2]] = Tiles.APPLE
-        return pyglet.shapes.Rectangle(x=int(apple_coords[2] * TILE_SIZE), y=int(apple_coords[1] * TILE_SIZE),
-                                       width=TILE_SIZE, height=TILE_SIZE, color=COLOUR_RED, batch=self.__batch_ref)
-
-    def __remove_apple(self):
-        current_apple_x = self.px_to_tiles(self.current_apple.x)
-        current_apple_y = self.px_to_tiles(self.current_apple.y)
-        self._board[current_apple_y][current_apple_x] = Tiles.EMPTY
-        self.current_apple = None
+        self.__board[apple_coords[0]][apple_coords[1]] = Tile.APPLE
+        return apple_coords
 
     def print_board(self):
-        for row in self._board[::-1]:
+        for row in self.__board[::-1]:
             for elem in row:
                 print('_', end=" ") if elem.value == 0 else print(elem.value, end=" ")
             print()
         print()
-
-    def get_board(self):
-        board_values = []
-        for row in self._board:
-            new_row = []
-            for elem in row:
-                new_row.append(elem.value)
-            board_values.append(new_row)
-        return board_values
-
-    def distance_from_apple(self):
-        (apple_x, apple_y) = (self.px_to_tiles(self.current_apple.x), self.px_to_tiles(self.current_apple.y))
-        return math.sqrt(abs(self.__head[0] - apple_x) ** 2 + abs(self.__head[1] - apple_y) ** 2)

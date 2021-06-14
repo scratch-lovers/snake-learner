@@ -1,9 +1,9 @@
 import pyglet.event
 
 
-class PlayerEvents(pyglet.event.EventDispatcher):
-    def turn(self, snake, key):
-        self.dispatch_event('on_turn', snake, key)
+class WindowEvents(pyglet.event.EventDispatcher):
+    def next_player_move(self, next_move):
+        self.dispatch_event('receive_player_move', next_move)
 
 
-PlayerEvents.register_event_type('on_turn')
+WindowEvents.register_event_type('receive_player_move')
