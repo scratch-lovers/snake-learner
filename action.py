@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from tile import Tile
 
 
 @dataclass(frozen=True)
@@ -13,7 +14,14 @@ class ActionMove:
 
 
 @dataclass(frozen=True)
+class ActionAdd:
+    add_to: tuple[int, int]
+    add_what: Tile
+
+
+@dataclass(frozen=True)
 class ActionAddMove:
-    added_to: tuple[int, int]
+    add_to: tuple[int, int]
+    add_what: Tile
     move_from: tuple[int, int]
     move_to: tuple[int, int]
