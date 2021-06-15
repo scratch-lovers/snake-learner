@@ -1,4 +1,3 @@
-from typing import Union, Tuple, List
 import random
 from config import BOARD_SIZE, START_Y, START_X
 from tile import Tile

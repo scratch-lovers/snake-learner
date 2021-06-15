@@ -52,7 +52,6 @@ class Screen:
         entity_colour = COLOUR_BLUE
         if tile == tile.APPLE:
             entity_colour = COLOUR_RED
-
         self.__entities.append(
             pyglet.shapes.Rectangle(y=px_y, x=px_x, width=TILE_SIZE, height=TILE_SIZE,
                                     color=entity_colour, batch=self.__batch))
