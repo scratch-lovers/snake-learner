@@ -1,16 +1,17 @@
 # game window config
-WINDOW_SIZE = 800
+WINDOW_SIZE: int = 800
 
 # board config
 # WINDOW_SIZE must be divisible by BOARD_SIZE
-BOARD_SIZE = 20
-TILE_SIZE = WINDOW_SIZE // BOARD_SIZE
+BOARD_SIZE: int = 20
+TILE_SIZE: int = WINDOW_SIZE // BOARD_SIZE
 
 # snake config
-START_X = 9
-START_Y = 9
-COLOUR_BLUE = (55, 55, 255)
-COLOUR_RED = (214, 9, 9)
+# -1 because it's an index
+START_X: int = BOARD_SIZE // 2 - 1
+START_Y: int = BOARD_SIZE // 2 - 1
+COLOUR_BLUE: tuple[int, int, int] = (55, 55, 255)
+COLOUR_RED: tuple[int, int, int] = (214, 9, 9)
 
 # game loop config
-TICK_LENGTH = 0.1
+TICK_LENGTH: float = 0.1
