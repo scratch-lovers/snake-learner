@@ -26,7 +26,7 @@ def main(game_mode: GameMode) -> None:
         schedule_interval(lambda _: _player_loop(board, screen, player_state), TICK_LENGTH)
         run()
     else:
-        _tensorflow_loop()
+        tensorflow_loop()
 
 
 def _player_loop(board: Board, screen: Screen, player_state: PlayerState) -> None:
@@ -36,24 +36,9 @@ def _player_loop(board: Board, screen: Screen, player_state: PlayerState) -> Non
     screen.unlock_move()
 
 
-def _tensorflow_loop() -> None:
+def tensorflow_loop() -> None:
     pass
 
 
 if __name__ == '__main__':
     main(GameMode.PLAYER)
-
-
-# def input_loop():
-#     while True:
-#         next_game_tick()
-#         board.print_board()
-#         given_action = input("What to do next: ")
-#         if given_action.strip() == 'A':
-#             action = pyglet.window.key.A
-#         elif given_action.strip() == 'D':
-#             action = pyglet.window.key.D
-#         else:
-#             action = 0
-#         snake.change_direction(action)
-

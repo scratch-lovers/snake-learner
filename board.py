@@ -7,7 +7,6 @@ from action import ActionQuit, ActionMove, ActionAddMove, ActionAdd, Action
 
 
 class Board:
-
     __board: list[list[Tile]] = []
     __snake: list[tuple[int, int]]
     __snake_direction: Direction
@@ -19,7 +18,7 @@ class Board:
 
     def setup_board(self) -> list[Action]:
         self.__generate_board()
-        self.__update_snake(START_Y, START_X, True)
+        self.__update_snake(START_Y, START_X, remove_tail=False)
         self.__current_apple = self.__generate_apple()
         apple_y, apple_x = self.__current_apple
         return [ActionAdd((START_Y, START_X), Tile.SNAKE), ActionAdd((apple_y, apple_x), Tile.APPLE)]
@@ -35,13 +34,13 @@ class Board:
         next_tile: Tile = self.__check_tile(next_head_y, next_head_x)
 
         if next_tile == Tile.APPLE:
-            self.__update_snake(next_head_y, next_head_x, True)
+            self.__update_snake(next_head_y, next_head_x, remove_tail=False)
             old_apple_y, old_apple_x = self.__current_apple
             self.__current_apple = self.__generate_apple()
             return ActionAddMove(self.__snake[0], Tile.SNAKE, (old_apple_y, old_apple_x), self.__current_apple)
         elif next_tile == Tile.EMPTY:
             old_tail: tuple[int, int] = self.__snake[-1]
-            self.__update_snake(next_head_y, next_head_x, False)
+            self.__update_snake(next_head_y, next_head_x, remove_tail=True)
             return ActionMove(old_tail, self.__snake[0])
         else:
             # WALL or SNAKE
@@ -77,11 +76,11 @@ class Board:
         else:
             return Tile.WALL
 
-    def __update_snake(self, next_head_y: int, next_head_x: int, ate_apple: bool) -> None:
+    def __update_snake(self, next_head_y: int, next_head_x: int, remove_tail: bool) -> None:
         self.__board[next_head_y][next_head_x] = Tile.SNAKE
         self.__snake.insert(0, (next_head_y, next_head_x))
 
-        if not ate_apple:
+        if remove_tail:
             tail_y, tail_x = self.__snake[-1]
             self.__board[tail_y][tail_x] = Tile.EMPTY
             self.__snake.pop()
