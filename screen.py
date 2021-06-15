@@ -63,7 +63,6 @@ class Screen:
         curr_entity: pyglet.shapes.Rectangle = next(
             entity for entity in self.__entities
             if entity.y == curr_y and entity.x == curr_x)
-        assert curr_entity is not None
 
         curr_entity.y = new_y
         curr_entity.x = new_x
