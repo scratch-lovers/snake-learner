@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 from dataclasses import dataclass
 from tile import Tile
 
@@ -10,22 +10,22 @@ class ActionQuit:
 
 @dataclass(frozen=True)
 class ActionMove:
-    move_from: tuple[int, int]
-    move_to: tuple[int, int]
+    move_from: Tuple[int, int]
+    move_to: Tuple[int, int]
 
 
 @dataclass(frozen=True)
 class ActionAdd:
-    add_to: tuple[int, int]
+    add_to: Tuple[int, int]
     add_what: Tile
 
 
 @dataclass(frozen=True)
 class ActionAddMove:
-    add_to: tuple[int, int]
+    add_to: Tuple[int, int]
     add_what: Tile
-    move_from: tuple[int, int]
-    move_to: tuple[int, int]
+    move_from: Tuple[int, int]
+    move_to: Tuple[int, int]
 
 
 Action = Union[ActionQuit, ActionMove, ActionAdd, ActionAddMove]

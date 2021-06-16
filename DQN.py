@@ -20,7 +20,7 @@ from tf_agents.trajectories import trajectory
 from tf_agents.specs import tensor_spec
 from tf_agents.utils import common
 
-from learningEnvironment import LearningEnvironment
+from learningEnvironmentTEST import LearningEnvironment
 
 # HYPERPARAMETERS SECTION
 num_iterations = 20000  # @param {type:"integer"}
@@ -91,12 +91,12 @@ q_values_layer = tf.keras.layers.Dense(
     bias_initializer=tf.keras.initializers.Constant(-0.2))
 
 q_input_layer = tf.keras.layers.Dense(
-        402,
+        5,
         activation=tf.keras.activations.relu,
         kernel_initializer=tf.keras.initializers.VarianceScaling(
-            scale=2.0, mode='fan_in', distribution='truncated_normal')    
+            scale=2.0, mode='fan_in', distribution='truncated_normal')
 )
-
+#
 q_net = sequential.Sequential([q_input_layer] + dense_layers + [q_values_layer])
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
@@ -142,6 +142,7 @@ def compute_avg_return(environment, policy, num_episodes=10, xd=False):
             time_step = environment.step(action_step.action)
             if xd:
                 environment._env.envs[0].board.print_board()
+                time.sleep(0.25)
             episode_return += time_step.reward
         total_return += episode_return
 
@@ -207,6 +208,7 @@ for _ in range(num_iterations):
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
     if step % eval_interval == 0:
-        avg_return = compute_avg_return(eval_env, agent.policy, num_eval_episodes, True)
-        print('step = {0}: Average Return = {1}'.format(step, avg_return))
-        returns.append(avg_return)
+        if step >= 10000:
+            avg_return = compute_avg_return(eval_env, agent.collect_policy, 1, True)
+            print('step = {0}: Average Return = {1}'.format(step, avg_return))
+            returns.append(avg_return)

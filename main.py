@@ -1,6 +1,8 @@
 from enum import Enum
 from pyglet.clock import schedule_interval
 from pyglet.app import run
+from typing import List
+
 from config import TICK_LENGTH
 from board import Board
 from screen import Screen
@@ -17,7 +19,7 @@ class GameMode(Enum):
 def main(game_mode: GameMode) -> None:
     board: Board = Board()
     player_state: PlayerState = PlayerState()
-    setup_actions: list[Action] = board.setup_board()
+    setup_actions: List[Action] = board.setup_board()
     if game_mode == GameMode.PLAYER:
         screen: Screen = Screen(player_state.get_event_handler())
         for action in setup_actions:

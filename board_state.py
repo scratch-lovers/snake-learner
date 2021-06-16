@@ -1,11 +1,14 @@
 from dataclasses import dataclass
+
+from typing import List, Tuple
+
 from tile import Tile
 from direction import Direction
 
 
 @dataclass(frozen=True)
 class BoardState:
-    board: list[list[Tile]]
-    snake: list[tuple[int, int]]
+    board: List[List[Tile]]
+    snake: List[Tuple[int, int]]
     snake_direction: Direction
-    current_apple: tuple[int, int]
+    current_apple: Tuple[int, int]

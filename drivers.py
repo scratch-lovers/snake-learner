@@ -17,7 +17,7 @@ from tf_agents.drivers import dynamic_episode_driver, dynamic_step_driver
 from tf_agents.networks import network
 from tf_agents.specs import tensor_spec
 
-from learningEnvironment import LearningEnvironment
+from learningEnvironmentTEST import LearningEnvironment
 import time
 import numpy
 
@@ -48,7 +48,7 @@ def compute_avg_return(environment, policy, num_episodes=10):
 env = LearningEnvironment()
 tf_env = tf_py_environment.TFPyEnvironment(env)
 
-input_tensor_spec = tensor_spec.TensorSpec((102,), tf.int32)
+input_tensor_spec = tensor_spec.TensorSpec((5,), tf.int32)
 time_step_spec = tf_env.time_step_spec()
 action_spec = tf_env.action_spec()
 num_actions = env.action_spec().maximum - env.action_spec().minimum + 1
@@ -87,7 +87,7 @@ num_episodes = tf_metrics.NumberOfEpisodes()
 env_steps = tf_metrics.EnvironmentSteps()
 observers = [num_episodes, env_steps]
 driver = dynamic_step_driver.DynamicStepDriver(
-    tf_env, tf_policy, observers, num_steps=30000)
+    tf_env, tf_policy, observers, num_steps=10000)
 
 # Initial driver.run will reset the environment and initialize the policy.
 final_time_step, policy_state = driver.run()

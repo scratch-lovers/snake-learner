@@ -1,4 +1,7 @@
 import random
+
+from typing import List, Tuple
+
 from config import BOARD_SIZE, START_Y, START_X
 from tile import Tile
 from move import Move
@@ -7,10 +10,10 @@ from action import ActionQuit, ActionMove, ActionAddMove, ActionAdd, Action
 
 
 class Board:
-    _board: list[list[Tile]]
-    _snake: list[tuple[int, int]]
+    _board: List[List[Tile]]
+    _snake: List[Tuple[int, int]]
     _snake_direction: Direction
-    _current_apple: tuple[int, int]
+    _current_apple: Tuple[int, int]
 
     def __init__(self) -> None:
         self._snake = []
@@ -18,7 +21,7 @@ class Board:
         self._board = []
         self._current_apple = (-1, -1)
 
-    def setup_board(self) -> list[Action]:
+    def setup_board(self) -> List[Action]:
         self._generate_board()
         self._update_snake(START_Y, START_X, remove_tail=False)
         self._current_apple = self._generate_apple()
@@ -41,7 +44,7 @@ class Board:
             self._current_apple = self._generate_apple()
             return ActionAddMove(self._snake[0], Tile.SNAKE, (old_apple_y, old_apple_x), self._current_apple)
         elif next_tile == Tile.EMPTY:
-            old_tail: tuple[int, int] = self._snake[-1]
+            old_tail: Tuple[int, int] = self._snake[-1]
             self._update_snake(next_head_y, next_head_x, remove_tail=True)
             return ActionMove(old_tail, self._snake[0])
         else:
@@ -58,7 +61,7 @@ class Board:
                 next_move_value: int = (self._snake_direction.value - 1) % 4
             self._snake_direction = Direction(next_move_value)
 
-    def _calculate_next_tile(self) -> tuple[int, int]:
+    def _calculate_next_tile(self) -> Tuple[int, int]:
         head_y, head_x = self._snake[0]
 
         if self._snake_direction == Direction.UP:
@@ -87,21 +90,21 @@ class Board:
             self._board[tail_y][tail_x] = Tile.EMPTY
             self._snake.pop()
 
-    def _generate_apple(self) -> tuple[int, int]:
+    def _generate_apple(self) -> Tuple[int, int]:
         # TODO check if 'snake percentage' is high enough
 
         # map the board: TILE -> (TILE, y, x)
-        board_indexed: list[list[tuple[Tile, int, int]]] = [
+        board_indexed: List[List[Tuple[Tile, int, int]]] = [
             [(self._board[row][tile], row, tile)
              for tile in range(BOARD_SIZE)]
             for row in range(BOARD_SIZE)]
-        board_indexed_flattened: list[tuple[Tile, int, int]] = [item for sublist in board_indexed for item in sublist]
+        board_indexed_flattened: List[Tuple[Tile, int, int]] = [item for sublist in board_indexed for item in sublist]
 
-        apple_candidates: list[tuple[Tile, int, int]] = list(
+        apple_candidates: List[Tuple[Tile, int, int]] = list(
             filter(lambda tile: tile[0] == Tile.EMPTY, board_indexed_flattened))
 
         apple_index: int = random.randint(0, len(apple_candidates) - 1)
-        apple_coords: tuple[int, int] = apple_candidates[apple_index][1:]
+        apple_coords: Tuple[int, int] = apple_candidates[apple_index][1:]
 
         self._board[apple_coords[0]][apple_coords[1]] = Tile.APPLE
         return apple_coords
