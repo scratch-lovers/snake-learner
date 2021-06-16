@@ -23,26 +23,38 @@ class LearningEnvironment(py_environment.PyEnvironment):
     def __init__(self):
         super().__init__()
 
-        no_of_tiles = BOARD_SIZE * BOARD_SIZE
-
-        minima = [0 for _ in range(no_of_tiles)]
-        minima.append(0)
-        minima.append(1)
-        maxima = [4 for _ in range(no_of_tiles)]
+        # no_of_tiles = BOARD_SIZE * BOARD_SIZE
+        #
+        # minima = [0 for _ in range(no_of_tiles)]
+        # minima.append(0)
+        # minima.append(1)
+        # maxima = [4 for _ in range(no_of_tiles)]
         self.__max_distance = int(math.sqrt((BOARD_SIZE - 1) ** 2 * 2))
-        maxima.append(self.__max_distance)
-        maxima.append(no_of_tiles)
+        # maxima.append(self.__max_distance)
+        # maxima.append(no_of_tiles)
 
         self._action_spec = array_spec.BoundedArraySpec(shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(no_of_tiles + 2, ), dtype=np.int32, minimum=minima,
-            maximum=maxima, name='observation')
+            shape=(12, ), dtype=np.int32, minimum=[0]*12,
+            maximum=[1]*12, name='observation')
 
         self.board = TFBoard()
-        self.board.setup_board()
+        first_observation = self.board.setup_board()
+
+        snake_head_y, snake_head_x = self.board._snake[0]
+        apple_y, apple_x = self.board._current_apple
+
+        self.__last_dist = math.sqrt((snake_head_y - apple_y) ** 2 + (snake_head_x - apple_x) ** 2)
+
         self.__episode_ended = False
         self.__tick = 0
-        self.__max_tick = 1000
+        self.__max_tick = 10000
+        self.__apples_eaten = 0
+
+    def calculate_dist(self):
+        snake_head_y, snake_head_x = self.board._snake[0]
+        apple_y, apple_x = self.board._current_apple
+        return math.sqrt((snake_head_y - apple_y) ** 2 + (snake_head_x - apple_x) ** 2)
 
     def observation_spec(self):
         return self._observation_spec
@@ -72,20 +84,35 @@ class LearningEnvironment(py_environment.PyEnvironment):
         # self.board.print_board()
 
         if self.__episode_ended or self.__tick == self.__max_tick:
-            return time_step.termination(self.__observation, 0)
+            if self.__tick == self.__max_tick:
+                return time_step.termination(self.__observation, reward=0)
+            else:
+                return time_step.termination(self.__observation, -100)
         else:
             # TODO remove this
             if not isinstance(self.__board_action, ActionMove):
                 print(self.__board_action.add_what)
             if isinstance(self.__board_action, ActionAddMove):
-                return time_step.transition(self.__observation, reward=1000000, discount=1.0)
-            return time_step.transition(
-                self.__observation, reward=(self.__max_distance - self.__observation[BOARD_SIZE * BOARD_SIZE]) ** 2, discount=1.0)
+                self.__last_dist = 13
+                self.__apples_eaten += 1
+                return time_step.transition(self.__observation, reward=10 * self.__apples_eaten, discount=0.95)
+            if self.__last_dist > self.calculate_dist():
+                self.__last_dist = self.calculate_dist()
+                return time_step.transition(
+                    self.__observation, reward=1, discount=0.95)
+            elif self.__last_dist == self.calculate_dist():
+                return time_step.transition(self.__observation, reward=0, discount=0.95)
+            else:
+                self.__last_dist = self.calculate_dist()
+                return time_step.transition(self.__observation, reward=-1, discount=0.95)
 
     def _reset(self):
+        print("reset")
         self.__episode_ended = False
         self.__tick = 0
-        self.__observation = self.board.restart_board()
+        self.__apples_eaten = 0
+        self.board = TFBoard()
+        self.__observation = self.board.setup_board()
         return time_step.restart(self.__observation)
 
     def get_info(self):

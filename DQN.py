@@ -23,14 +23,14 @@ from tf_agents.utils import common
 from learningEnvironment import LearningEnvironment
 
 # HYPERPARAMETERS SECTION
-num_iterations = 20000  # @param {type:"integer"}
+num_iterations = 50000  # @param {type:"integer"}
 
 initial_collect_steps = 100  # @param {type:"integer"}
 collect_steps_per_iteration = 1  # @param {type:"integer"}
 replay_buffer_max_length = 100000  # @param {type:"integer"}
 
-batch_size = 64  # @param {type:"integer"}
-learning_rate = 1e-3  # @param {type:"number"}
+batch_size = 500  # @param {type:"integer"}
+learning_rate = 0.00025  # @param {type:"number"}
 log_interval = 200  # @param {type:"integer"}
 
 num_eval_episodes = 10  # @param {type:"integer"}
@@ -64,7 +64,7 @@ eval_py_env = LearningEnvironment()
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)
 eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 
-fc_layer_params = (100, 50)
+fc_layer_params = (128, 128, 128)
 action_tensor_spec = tensor_spec.from_spec(train_env.action_spec())
 num_actions = action_tensor_spec.maximum - action_tensor_spec.minimum + 1
 # print("\nHERE ", type(num_actions))
@@ -90,14 +90,14 @@ q_values_layer = tf.keras.layers.Dense(
         minval=-0.03, maxval=0.03),
     bias_initializer=tf.keras.initializers.Constant(-0.2))
 
-q_input_layer = tf.keras.layers.Dense(
-        402,
-        activation=tf.keras.activations.relu,
-        kernel_initializer=tf.keras.initializers.VarianceScaling(
-            scale=2.0, mode='fan_in', distribution='truncated_normal')    
-)
-
-q_net = sequential.Sequential([q_input_layer] + dense_layers + [q_values_layer])
+# q_input_layer = tf.keras.layers.Dense(
+#         5,
+#         activation=tf.keras.activations.relu,
+#         kernel_initializer=tf.keras.initializers.VarianceScaling(
+#             scale=2.0, mode='fan_in', distribution='truncated_normal')
+# )
+# [q_input_layer] +
+q_net = sequential.Sequential(dense_layers + [q_values_layer])
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
@@ -142,6 +142,7 @@ def compute_avg_return(environment, policy, num_episodes=10, xd=False):
             time_step = environment.step(action_step.action)
             if xd:
                 environment._env.envs[0].board.print_board()
+                time.sleep(0.25)
             episode_return += time_step.reward
         total_return += episode_return
 
@@ -206,7 +207,7 @@ for _ in range(num_iterations):
     if step % log_interval == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
-    if step % eval_interval == 0:
-        avg_return = compute_avg_return(eval_env, agent.policy, num_eval_episodes, True)
+    if step % eval_interval == 0 and step >= 20000:
+        avg_return = compute_avg_return(train_env, agent.collect_policy, 1, True)
         print('step = {0}: Average Return = {1}'.format(step, avg_return))
         returns.append(avg_return)
