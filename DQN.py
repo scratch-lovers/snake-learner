@@ -14,7 +14,7 @@ from tf_agents.environments import tf_py_environment
 from tf_agents.eval import metric_utils
 from tf_agents.metrics import tf_metrics
 from tf_agents.networks import sequential
-from tf_agents.policies import random_tf_policy
+from tf_agents.policies import random_tf_policy, PolicySaver
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.specs import tensor_spec
@@ -23,6 +23,8 @@ from tf_agents.utils import common
 from learningEnvironment import LearningEnvironment
 
 # HYPERPARAMETERS SECTION
+from screen import Screen
+
 num_iterations = 50000  # @param {type:"integer"}
 
 initial_collect_steps = 100  # @param {type:"integer"}
@@ -142,7 +144,7 @@ def compute_avg_return(environment, policy, num_episodes=10, xd=False):
             time_step = environment.step(action_step.action)
             if xd:
                 environment._env.envs[0].board.print_board()
-                time.sleep(0.25)
+                time.sleep(0.1)
             episode_return += time_step.reward
         total_return += episode_return
 
@@ -193,6 +195,21 @@ agent.train_step_counter.assign(0)
 avg_return = compute_avg_return(eval_env, random_policy, num_eval_episodes)
 returns = [avg_return]
 
+
+def record_game(environment, policy):
+    time_step = environment.reset()
+    while not time_step.is_last():
+        action_step = policy.action(time_step)
+        time_step = environment.step(action_step.action)
+    return environment._env.envs[0].board.get_history()
+
+
+def draw_game(actions):
+    screen = Screen()
+    screen.replay_actions(actions)
+
+
+checkpointer = common.Checkpointer(ckpt_dir='policies/', policy=agent.policy)
 for _ in range(num_iterations):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
@@ -207,7 +224,13 @@ for _ in range(num_iterations):
     if step % log_interval == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
-    if step % eval_interval == 0 and step >= 20000:
-        avg_return = compute_avg_return(train_env, agent.collect_policy, 1, True)
-        print('step = {0}: Average Return = {1}'.format(step, avg_return))
-        returns.append(avg_return)
+    if step % (eval_interval * 2) == 0:# and step >= 10000:
+        print('eloo')
+        checkpointer.save(global_step=step)
+        # avg_return = compute_avg_return(train_env, agent.collect_policy, 1, False)
+        # print('step = {0}: Average Return = {1}'.format(step, avg_return))
+        # returns.append(avg_return)
+        # draw_game(record_game(eval_env, agent.policy))
+    #
+    # if step % 10000 == 0:
+    #     q_net.save('policies/' + step)

@@ -5,7 +5,7 @@ WINDOW_SIZE: int = 800
 
 # board config
 # WINDOW_SIZE must be divisible by BOARD_SIZE
-BOARD_SIZE: int = 10
+BOARD_SIZE: int = 20
 TILE_SIZE: int = WINDOW_SIZE // BOARD_SIZE
 
 # snake config

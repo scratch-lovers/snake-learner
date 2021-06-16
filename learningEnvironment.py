@@ -35,8 +35,8 @@ class LearningEnvironment(py_environment.PyEnvironment):
 
         self._action_spec = array_spec.BoundedArraySpec(shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(12, ), dtype=np.int32, minimum=[0]*12,
-            maximum=[1]*12, name='observation')
+            shape=(20, ), dtype=np.float64, minimum=[0]*20,
+            maximum=[1]*12 + [19]*8, name='observation')
 
         self.board = TFBoard()
         first_observation = self.board.setup_board()
@@ -89,9 +89,9 @@ class LearningEnvironment(py_environment.PyEnvironment):
             else:
                 return time_step.termination(self.__observation, -100)
         else:
-            # TODO remove this
-            if not isinstance(self.__board_action, ActionMove):
-                print(self.__board_action.add_what)
+            # # TODO remove this
+            # if not isinstance(self.__board_action, ActionMove):
+            #     print(self.__board_action.add_what)
             if isinstance(self.__board_action, ActionAddMove):
                 self.__last_dist = 13
                 self.__apples_eaten += 1
@@ -107,7 +107,7 @@ class LearningEnvironment(py_environment.PyEnvironment):
                 return time_step.transition(self.__observation, reward=-1, discount=0.95)
 
     def _reset(self):
-        print("reset")
+        # print("reset")
         self.__episode_ended = False
         self.__tick = 0
         self.__apples_eaten = 0
