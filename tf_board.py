@@ -44,8 +44,8 @@ class TFBoard(Board):
         temp_list = self.__where_apple()
         temp_list += self.__where_obstacle()
         temp_list += self.__what_directions()
-        observation = np.array(temp_list)
-        return np.append(observation, self.__get_observation())
+        observation = np.array(temp_list).astype(np.float16)
+        return np.append(observation, self.__get_observation().astype(np.float16))
 
     def restart_board(self) -> np.ndarray:
         self._board = copy.deepcopy(self.__starting_state.board)
@@ -55,8 +55,8 @@ class TFBoard(Board):
         temp_list = self.__where_apple()
         temp_list += self.__where_obstacle()
         temp_list += self.__what_directions()
-        observation = np.array(temp_list)
-        return np.append(observation, self.__get_observation())
+        observation = np.array(temp_list).astype(np.float16)
+        return np.append(observation, self.__get_observation().astype(np.float16))
         # action history not implemented
 
     def __return_apple_coords(self) -> Tuple[int, int]:
@@ -126,7 +126,8 @@ class TFBoard(Board):
         # distances_queue.rotate(offset)
         scale = math.sqrt(BOARD_SIZE ** 2 * 2)
         distances = np.array(distances)
-        distances_scaled = 1 - 2 * distances / scale
+        # distances_scaled = 1 - 2 * distances / scale
+        distances_scaled = distances / scale
         return distances_scaled
 
     def parse_move(self, move: Move) -> Tuple[Action, np.ndarray]:
@@ -136,8 +137,8 @@ class TFBoard(Board):
         temp_list = self.__where_apple()
         temp_list += self.__where_obstacle()
         temp_list += self.__what_directions()
-        observation = np.array(temp_list)
-        return action, np.append(observation, self.__get_observation())
+        observation = np.array(temp_list).astype(np.float16)
+        return action, np.append(observation, self.__get_observation().astype(np.float16))
 
     def get_history(self) -> List[Action]:
         return self.__action_history

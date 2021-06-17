@@ -1,31 +1,21 @@
 from __future__ import absolute_import, division, print_function
-
-import base64
 import time
-
-import numpy as np
-import PIL.Image
-
 import tensorflow as tf
-
 from tf_agents.agents.dqn import dqn_agent
-from tf_agents.environments import suite_gym
 from tf_agents.environments import tf_py_environment
-from tf_agents.eval import metric_utils
-from tf_agents.metrics import tf_metrics
 from tf_agents.networks import sequential
-from tf_agents.policies import random_tf_policy, PolicySaver
+from tf_agents.policies import random_tf_policy
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.specs import tensor_spec
 from tf_agents.utils import common
-
 from learningEnvironment import LearningEnvironment
+import numpy
 
 # HYPERPARAMETERS SECTION
 from screen import Screen
 
-num_iterations = 50000  # @param {type:"integer"}
+num_iterations = 100000  # @param {type:"integer"}
 
 initial_collect_steps = 100  # @param {type:"integer"}
 collect_steps_per_iteration = 1  # @param {type:"integer"}
@@ -38,28 +28,6 @@ log_interval = 200  # @param {type:"integer"}
 num_eval_episodes = 10  # @param {type:"integer"}
 eval_interval = 1000  # @param {type:"integer"}
 
-# env = LearningEnvironment()
-# env.reset()
-
-# print('Observation Spec:')
-# print(env.time_step_spec().observation)
-
-# print('Reward Spec:')
-# print(env.time_step_spec().reward)
-#
-# print('Action Spec:')
-# print(env.action_spec())
-
-# time_step = env.reset()
-# print('Time step:')
-# print(time_step)
-
-# action = np.array(1, dtype=np.int32)
-
-# next_time_step = env.step(action)
-# print('Next time step:')
-# print(next_time_step)
-
 train_py_env = LearningEnvironment()
 eval_py_env = LearningEnvironment()
 
@@ -69,11 +37,6 @@ eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 fc_layer_params = (128, 128, 128)
 action_tensor_spec = tensor_spec.from_spec(train_env.action_spec())
 num_actions = action_tensor_spec.maximum - action_tensor_spec.minimum + 1
-# print("\nHERE ", type(num_actions))
-# print("\nHERE ", action_tensor_spec.shape, action_tensor_spec.dtype)
-# print("\nHERE ", train_env.action_spec().shape, env.action_spec())
-# print("\nHERE ", train_env.observation_spec().shape, train_env.observation_spec())
-# print("\nHERE ", train_env.time_step_spec())
 
 
 def dense_layer(num_inputs):
@@ -92,20 +55,13 @@ q_values_layer = tf.keras.layers.Dense(
         minval=-0.03, maxval=0.03),
     bias_initializer=tf.keras.initializers.Constant(-0.2))
 
-# q_input_layer = tf.keras.layers.Dense(
-#         5,
-#         activation=tf.keras.activations.relu,
-#         kernel_initializer=tf.keras.initializers.VarianceScaling(
-#             scale=2.0, mode='fan_in', distribution='truncated_normal')
-# )
-# [q_input_layer] +
+
 q_net = sequential.Sequential(dense_layers + [q_values_layer])
 
 optimizer = tf.keras.optimizers.Adam(learning_rate=learning_rate)
 
 train_step_counter = tf.Variable(0)
 
-#print(env.action_spec().shape)
 
 agent = dqn_agent.DqnAgent(
     train_env.time_step_spec(),
@@ -119,10 +75,6 @@ agent.initialize()
 
 random_policy = random_tf_policy.RandomTFPolicy(train_env.time_step_spec(),
                                                 train_env.action_spec())
-
-# print("\nPOLICJA ", random_policy.policy_state_spec, random_policy.policy_step_spec)
-# print("\nPOLICJA ", agent.policy.action_spec, agent.policy.time_step_spec)
-
 eval_policy = agent.policy
 collect_policy = agent.collect_policy
 
@@ -148,8 +100,8 @@ def compute_avg_return(environment, policy, num_episodes=10, xd=False):
             episode_return += time_step.reward
         total_return += episode_return
 
-    avg_return = total_return / num_episodes
-    return avg_return.numpy()[0]
+    _avg_return = total_return / num_episodes
+    return _avg_return.numpy()[0]
 
 
 replay_buffer = tf_uniform_replay_buffer.TFUniformReplayBuffer(
@@ -162,7 +114,6 @@ def collect_step(environment, policy, buffer):
     time_step = environment.current_time_step()
     action_step = policy.action(time_step)
     next_time_step = environment.step(action_step.action)
-    # environment._env.envs[0].board.print_board()
     traj = trajectory.from_transition(time_step, action_step, next_time_step)
 
     # Add trajectory to the replay buffer
@@ -180,8 +131,6 @@ dataset = replay_buffer.as_dataset(
     num_parallel_calls=3,
     sample_batch_size=batch_size,
     num_steps=2).prefetch(3)
-
-# print(dataset)
 
 iterator = iter(dataset)
 
@@ -209,6 +158,7 @@ def draw_game(actions):
     screen.replay_actions(actions)
 
 
+checkpoints = [100, 200, 1000, 5000, 10000, 25000, 50000, 100000]
 checkpointer = common.Checkpointer(ckpt_dir='policies/', policy=agent.policy)
 for _ in range(num_iterations):
 
@@ -224,13 +174,9 @@ for _ in range(num_iterations):
     if step % log_interval == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
-    if step % (eval_interval * 2) == 0:# and step >= 10000:
-        print('eloo')
+    if step in checkpoints:
         checkpointer.save(global_step=step)
         # avg_return = compute_avg_return(train_env, agent.collect_policy, 1, False)
         # print('step = {0}: Average Return = {1}'.format(step, avg_return))
         # returns.append(avg_return)
         # draw_game(record_game(eval_env, agent.policy))
-    #
-    # if step % 10000 == 0:
-    #     q_net.save('policies/' + step)
