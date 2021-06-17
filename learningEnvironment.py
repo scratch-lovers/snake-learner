@@ -17,7 +17,7 @@ class LearningEnvironment(py_environment.PyEnvironment):
     __tick: int
     __board_action: Action
     __observation: np.ndarray
-    __max_tick: int
+    max_tick: int
     __max_distance: int
 
     def __init__(self):
@@ -48,7 +48,7 @@ class LearningEnvironment(py_environment.PyEnvironment):
 
         self.__episode_ended = False
         self.__tick = 0
-        self.__max_tick = 2000
+        self.max_tick = 2000
         self.__apples_eaten = 0
 
     def calculate_dist(self):
@@ -83,8 +83,8 @@ class LearningEnvironment(py_environment.PyEnvironment):
 
         # self.board.print_board()
 
-        if self.__episode_ended or self.__tick == self.__max_tick:
-            if self.__tick == self.__max_tick:
+        if self.__episode_ended or self.__tick == self.max_tick:
+            if self.__tick == self.max_tick:
                 return time_step.termination(self.__observation, reward=0)
             else:
                 return time_step.termination(self.__observation, -100)

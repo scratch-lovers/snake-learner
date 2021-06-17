@@ -159,7 +159,10 @@ def draw_game(actions):
 
 
 checkpoints = [100, 200, 1000, 5000, 10000, 25000, 50000, 100000]
-checkpointer = common.Checkpointer(ckpt_dir='testing/', policy=agent.policy)
+for x in range(0, 100000, 5000):
+    checkpoints.append(x)
+checkpointer = common.Checkpointer(ckpt_dir='testing/' + str(0) + '/', policy=agent.policy)
+checkpointer.save(global_step=tf.convert_to_tensor(0))
 for _ in range(num_iterations):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
@@ -174,7 +177,13 @@ for _ in range(num_iterations):
     if step % log_interval == 0:
         print('step = {0}: loss = {1}'.format(step, train_loss))
 
+    # pepega
+    if step > 15000:
+        train_env._env.envs[0].max_tick = 10000
+        eval_env._env.envs[0].max_tick = 10000
+
     if step in checkpoints:
+        checkpointer = common.Checkpointer(ckpt_dir='testing/' + str(step) + '/', policy=agent.policy)
         checkpointer.save(global_step=step)
         # avg_return = compute_avg_return(train_env, agent.collect_policy, 1, False)
         # print('step = {0}: Average Return = {1}'.format(step, avg_return))

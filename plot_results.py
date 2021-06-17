@@ -14,6 +14,7 @@ from tf_agents.policies import random_tf_policy, PolicySaver
 from tf_agents.replay_buffers import tf_uniform_replay_buffer
 from tf_agents.trajectories import trajectory
 from tf_agents.specs import tensor_spec
+import matplotlib.pyplot as plt
 
 batch_size = 500
 eval_py_env = LearningEnvironment()
@@ -21,16 +22,12 @@ eval_env = tf_py_environment.TFPyEnvironment(eval_py_env)
 train_py_env = LearningEnvironment()
 train_env = tf_py_environment.TFPyEnvironment(train_py_env)
 
-def record_game(environment, policy):
+def record_snake_length(environment, policy):
     time_step = environment.reset()
     while not time_step.is_last():
         action_step = policy.action(time_step)
         time_step = environment.step(action_step.action)
-    return environment._env.envs[0].board.get_history()
-
-def draw_game(actions):
-    screen = Screen()
-    screen.replay_actions(actions)
+    return len(environment._env.envs[0].board._snake)
 
 learning_rate = 0.00025
 train_step_counter = tf.Variable(0)
@@ -65,5 +62,33 @@ agent = dqn_agent.DqnAgent(
 agent.initialize()
 
 policy = agent.policy
-checkpointer = common.Checkpointer(ckpt_dir='testing/0/', policy=policy)
-draw_game(record_game(eval_env, agent.policy))
+
+steps = []
+for x in range(0, 100000, 5000):
+    steps.append(x)
+
+average_lengths = []
+games_to_play = 5
+
+for step in steps:
+    print(step)
+
+    checkpointer = common.Checkpointer(ckpt_dir='testing/' + str(step), policy=policy)
+
+    # pepega
+    if step > 15000:
+        eval_env._env.envs[0].max_tick = 10000
+
+    # play 5 games for every step
+    curr_lengths = []
+    for i in range(games_to_play):
+        curr_lengths.append(record_snake_length(eval_env, policy))
+    # get the avg
+    curr_average = sum(curr_lengths) / games_to_play
+    average_lengths.append((curr_average, step))
+
+# plot
+y_axis = [x[0] for x in average_lengths]
+x_axis = [x[1] for x in average_lengths]
+plt.plot(x_axis, y_axis)
+plt.show()

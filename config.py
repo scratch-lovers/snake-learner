@@ -5,7 +5,7 @@ WINDOW_SIZE: int = 800
 
 # board config
 # WINDOW_SIZE must be divisible by BOARD_SIZE
-BOARD_SIZE: int = 20
+BOARD_SIZE: int = 40
 TILE_SIZE: int = WINDOW_SIZE // BOARD_SIZE
 
 # snake config
@@ -16,4 +16,4 @@ COLOUR_BLUE: Tuple[int, int, int] = (55, 55, 255)
 COLOUR_RED: Tuple[int, int, int] = (214, 9, 9)
 
 # game loop config
-TICK_LENGTH: float = 0.1
+TICK_LENGTH: float = 0.05

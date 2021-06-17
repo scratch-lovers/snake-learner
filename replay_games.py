@@ -65,5 +65,11 @@ agent = dqn_agent.DqnAgent(
 agent.initialize()
 
 policy = agent.policy
-checkpointer = common.Checkpointer(ckpt_dir='testing/0/', policy=policy)
-draw_game(record_game(eval_env, agent.policy))
+
+games = [60000]
+for game in games:
+    print(game)
+    if game > 15000:
+        eval_env._env.envs[0].max_tick = 10000
+    checkpointer = common.Checkpointer(ckpt_dir='testing/' + str(game), policy=policy)
+    draw_game(record_game(eval_env, agent.policy))

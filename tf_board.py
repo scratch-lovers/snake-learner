@@ -152,7 +152,7 @@ class TFBoard(Board):
                 closure_arr[2] = self.__scan_area((snake_head_y + 1, snake_head_x))
             if ob_left == 0:
                 closure_arr[3] = self.__scan_area((snake_head_y, snake_head_x - 1))
-            print(closure_arr)
+            # print(closure_arr)
             # time.sleep(10)
             return closure_arr
         else:
