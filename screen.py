@@ -1,7 +1,7 @@
 from collections import deque
 from typing import List, Tuple, Deque
 import pyglet
-from config import WINDOW_SIZE, TILE_SIZE, COLOUR_BLUE, COLOUR_RED, TICK_LENGTH
+from config import WINDOW_SIZE, TILE_SIZE, COLOUR_BLUE, COLOUR_RED, TICK_LENGTH, BOARD_SIZE
 from action import ActionQuit, ActionMove, ActionAdd, ActionAddMove, Action
 from tile import Tile
 from move import Move
@@ -19,6 +19,12 @@ class Screen:
         self.__batch = pyglet.graphics.Batch()
         self.__entities = []
         self.__move_available = True
+        self.__score = 0
+        self.__label = pyglet.text.Label("Score: " + str(self.__score) + " / " + str(BOARD_SIZE * BOARD_SIZE),
+                                         font_name="Comic Sans",
+                                         font_size=36,
+                                         x=WINDOW_SIZE - 350,
+                                         y=WINDOW_SIZE - 180)
         self.__event_handler = event_handler
 
         @self.__window.event
@@ -34,6 +40,7 @@ class Screen:
         def on_draw() -> None:
             self.__window.clear()
             self.__batch.draw()
+            self.__label.draw()
 
     def unlock_move(self) -> None:
         self.__move_available = True
@@ -52,6 +59,12 @@ class Screen:
     def __add_entity(self, coords: Tuple[int, int], tile: Tile) -> None:
         px_y, px_x = self.__tile_to_px(coords)
         entity_colour = COLOUR_BLUE
+        self.__label = pyglet.text.Label("Score: " + str(self.__score) + " / " + str(BOARD_SIZE * BOARD_SIZE),
+                                         font_name="Comic Sans",
+                                         font_size=36,
+                                         x=WINDOW_SIZE - 330,
+                                         y=WINDOW_SIZE - 80)
+        self.__score += 1
         if tile == tile.APPLE:
             entity_colour = COLOUR_RED
         self.__entities.append(
