@@ -35,8 +35,8 @@ class LearningEnvironment(py_environment.PyEnvironment):
 
         self._action_spec = array_spec.BoundedArraySpec(shape=(), dtype=np.int32, minimum=0, maximum=2, name='action')
         self._observation_spec = array_spec.BoundedArraySpec(
-            shape=(20, ), dtype=np.float16, minimum=[0]*20,
-            maximum=[1]*12 + [19]*8, name='observation')
+            shape=(24, ), dtype=np.float16, minimum=[0]*24,
+            maximum=[1]*24, name='observation')
 
         self.board = TFBoard()
         first_observation = self.board.setup_board()
@@ -48,7 +48,7 @@ class LearningEnvironment(py_environment.PyEnvironment):
 
         self.__episode_ended = False
         self.__tick = 0
-        self.__max_tick = 20000
+        self.__max_tick = 2000
         self.__apples_eaten = 0
 
     def calculate_dist(self):

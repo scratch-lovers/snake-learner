@@ -1,9 +1,8 @@
 import copy
 import math
-from collections import deque
 
 import numpy as np
-from typing import List, Tuple
+from typing import List, Tuple, Deque
 from enum import Enum
 from board import Board
 from board_state import BoardState
@@ -12,6 +11,8 @@ from move import Move
 from action import Action
 from tile import Tile
 from config import BOARD_SIZE
+from collections import deque
+import time
 
 
 class DirectionAll(Enum):
@@ -41,22 +42,14 @@ class TFBoard(Board):
             snake_direction=Direction(self._snake_direction.value),
             current_apple=self._current_apple
         )
-        temp_list = self.__where_apple()
-        temp_list += self.__where_obstacle()
-        temp_list += self.__what_directions()
-        observation = np.array(temp_list).astype(np.float16)
-        return np.append(observation, self.__get_observation().astype(np.float16))
+        return self.__get_observation()
 
     def restart_board(self) -> np.ndarray:
         self._board = copy.deepcopy(self.__starting_state.board)
         self._snake = copy.deepcopy(self.__starting_state.snake)
         self._snake_direction = Direction(self.__starting_state.snake_direction.value)
         self._current_apple = self.__starting_state.current_apple
-        temp_list = self.__where_apple()
-        temp_list += self.__where_obstacle()
-        temp_list += self.__what_directions()
-        observation = np.array(temp_list).astype(np.float16)
-        return np.append(observation, self.__get_observation().astype(np.float16))
+        return self.__get_observation()
         # action history not implemented
 
     def __return_apple_coords(self) -> Tuple[int, int]:
@@ -115,7 +108,7 @@ class TFBoard(Board):
             current_tile = super()._check_tile(current_y, current_x)
         return distance
 
-    def __get_observation(self):
+    def __get_distances(self) -> np.ndarray:
         direction_values = range(DirectionAll.UP_RIGHT.value + 1)
 
         distances = [self.__get_distance(DirectionAll(direction)) for direction in direction_values]
@@ -134,11 +127,71 @@ class TFBoard(Board):
         # potencjalnie można stąd wziąć akcje do archiwizacji
         action = super().parse_move(move)
         self.__action_history.append(action)
+        return action, self.__get_observation()
+
+    def get_history(self) -> List[Action]:
+        return self.__action_history
+
+    def __scan_areas(self) -> np.ndarray:
+        # print('wololollo')
+        ob_up, ob_right, ob_below, ob_left = self.__where_obstacle()
+        obs_around = ob_up + ob_right + ob_below + ob_left
+        if obs_around == 4:
+            return np.array([0.0] * 4).astype(np.float16)
+        elif obs_around == 3 or obs_around == 1:
+            return np.array([ob_up, ob_right, ob_below, ob_left]).astype(np.float16)
+        elif obs_around == 2:
+            # print('starting calc...')
+            closure_arr = np.zeros((4,), dtype=np.float16)
+            snake_head_y, snake_head_x = self._snake[0]
+            if ob_up == 0:
+                closure_arr[0] = self.__scan_area((snake_head_y - 1, snake_head_x))
+            if ob_right == 0:
+                closure_arr[1] = self.__scan_area((snake_head_y, snake_head_x + 1))
+            if ob_below == 0:
+                closure_arr[2] = self.__scan_area((snake_head_y + 1, snake_head_x))
+            if ob_left == 0:
+                closure_arr[3] = self.__scan_area((snake_head_y, snake_head_x - 1))
+            print(closure_arr)
+            # time.sleep(10)
+            return closure_arr
+        else:
+            return np.array([1.0] * 4).astype(np.float16)
+
+    def __scan_area(self, starting_coords) -> np.float16:
+        visited = set()
+        queue: Deque[Tuple[int, int]] = deque()
+        queue.append(starting_coords)
+        # append() dodaje na prawo, popleft() usuwa z lewej
+        while len(queue) >= 1:
+            node_y, node_x = queue.popleft()
+            visited.add((node_y, node_x))
+            # print(len(queue))
+            if node_y != 0 and self._board[node_y-1][node_x] != Tile.SNAKE:
+                if (node_y - 1, node_x) not in visited:
+                    queue.append((node_y - 1, node_x))
+                    visited.add((node_y - 1, node_x))
+            if node_y != BOARD_SIZE - 1 and self._board[node_y+1][node_x] != Tile.SNAKE:
+                if (node_y + 1, node_x) not in visited:
+                    queue.append((node_y + 1, node_x))
+                    visited.add((node_y + 1, node_x))
+            if node_x != 0 and self._board[node_y][node_x-1] != Tile.SNAKE:
+                if (node_y, node_x - 1) not in visited:
+                    queue.append((node_y, node_x - 1))
+                    visited.add((node_y, node_x - 1))
+            if node_x != BOARD_SIZE - 1 and self._board[node_y][node_x + 1] != Tile.SNAKE:
+                if (node_y, node_x + 1) not in visited:
+                    queue.append((node_y, node_x + 1))
+                    visited.add((node_y, node_x + 1))
+
+        # print(visited, len(visited))
+        return np.float16(len(visited)) / (BOARD_SIZE * BOARD_SIZE)
+
+    def __get_observation(self) -> np.ndarray:
         temp_list = self.__where_apple()
         temp_list += self.__where_obstacle()
         temp_list += self.__what_directions()
         observation = np.array(temp_list).astype(np.float16)
-        return action, np.append(observation, self.__get_observation().astype(np.float16))
-
-    def get_history(self) -> List[Action]:
-        return self.__action_history
+        observation = np.append(observation, self.__get_distances())
+        observation = np.append(observation, self.__scan_areas())
+        return observation.astype(np.float16)

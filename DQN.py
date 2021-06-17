@@ -159,7 +159,7 @@ def draw_game(actions):
 
 
 checkpoints = [100, 200, 1000, 5000, 10000, 25000, 50000, 100000]
-checkpointer = common.Checkpointer(ckpt_dir='policies/', policy=agent.policy)
+checkpointer = common.Checkpointer(ckpt_dir='testing/', policy=agent.policy)
 for _ in range(num_iterations):
 
     # Collect a few steps using collect_policy and save to the replay buffer.
@@ -179,4 +179,4 @@ for _ in range(num_iterations):
         # avg_return = compute_avg_return(train_env, agent.collect_policy, 1, False)
         # print('step = {0}: Average Return = {1}'.format(step, avg_return))
         # returns.append(avg_return)
-        # draw_game(record_game(eval_env, agent.policy))
+        draw_game(record_game(eval_env, agent.policy))
